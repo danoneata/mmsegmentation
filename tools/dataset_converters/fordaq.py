@@ -198,12 +198,14 @@ def draw_annot_as_image(
                 return shape
         raise ValueError("Unknown annotation type")
 
-    # Decay should have highest priority
-    LOW_PRIORITY = ["Stain"]
+    MAX_PRIORITY = 100
+    DEFECT_PRIORITIES = {
+        "Stain": 0,
+    }
 
     w, h = image_size
     image = np.zeros((h, w), dtype=np.uint8)
-    annot = sorted(annot, key=lambda a: a["name"] in LOW_PRIORITY)
+    annot = sorted(annot, key=lambda defect: DEFECT_PRIORITIES.get(defect["name"], MAX_PRIORITY))
 
     for a in annot:
         if a["name"] == "Red_Heart":
@@ -238,9 +240,15 @@ def prepare_annots(dataset, resize, keys, out_dir):
         path = out_dir / (key.board_id + "-" + key.annotator + ".png")
         cv2.imwrite(str(path), image)
 
-        # st.image(str(dataset.get_image_path(key)))
-        # show_annot(image)
-        # pdb.set_trace()
+        # if any(a["name"] == "Stain" for a in annot):
+        #     st.image(str(dataset.get_image_path(key)))
+        #     defect_code_stain = DEFECT_CODES["Stain"]
+        #     img = image
+        #     img_stain = (img == defect_code_stain) * defect_code_stain
+        #     img_stain = np.array(img_stain, dtype=np.uint8)
+        #     show_annot(img)
+        #     show_annot(img_stain)
+        #     pdb.set_trace()
 
 
 @click.command()
